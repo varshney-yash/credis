@@ -23,6 +23,17 @@ std::string resolve_get(const std::string& data) {
     }
 }
 
+std::string resolve_delete(const std::string& data) {
+    size_t key_start = data.find(' ') + 1;
+    size_t key_end = data.find("\r\n", key_start);
+    std::string key = data.substr(key_start, key_end - key_start);
+    if (key_dict.erase(key)) {
+        return "OK";
+    } else {
+        return "NULL";
+    }
+}
+
 std::string resolve_ping() {
     return "PONG";
 }
