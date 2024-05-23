@@ -1,7 +1,13 @@
 #include "resolve.h"
 #include <unordered_map>
+#include <fstream>
+#include <iostream>
 
 static std::unordered_map<std::string, std::string> key_dict;
+
+std::string resolve_ping() {
+    return "PONG";
+}
 
 std::string resolve_set(const std::string& data) {
     size_t key_start = data.find(' ') + 1;
@@ -34,6 +40,33 @@ std::string resolve_delete(const std::string& data) {
     }
 }
 
-std::string resolve_ping() {
-    return "PONG";
+
+void save_snapshot(const std::string& filename) {
+    std::ofstream ofs(filename, std::ios::out | std::ios::trunc);
+    if (!ofs.is_open()) {
+        std::cerr << "Error opening snapshot file for writing" << std::endl;
+        return;
+    }
+
+    for (const auto& pair : key_dict) {
+        ofs << pair.first << " " << pair.second << "\n";
+    }
+
+    ofs.close();
+}
+
+void load_snapshot(const std::string& filename) {
+    std::ifstream ifs(filename);
+    if (!ifs.is_open()) {
+        std::cerr << "Error opening snapshot file for reading" << std::endl;
+        return;
+    }
+
+    key_dict.clear();
+    std::string key, value;
+    while (ifs >> key >> value) {
+        key_dict[key] = value;
+    }
+
+    ifs.close();
 }

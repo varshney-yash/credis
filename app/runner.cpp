@@ -6,10 +6,15 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <thread>
+#include <chrono>
 
 void Runner::run_server(int argc, char* argv[]) {
     Environment::load();
     std::cout << "Starting server on " << Environment::HOST << ":" << Environment::PORT << std::endl;
+
+    load_snapshot("snapshot.txt");
+    std::cout << "Snapshot loaded from snapshot.txt" << std::endl;
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {
@@ -52,6 +57,14 @@ void Runner::run_server(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    std::thread snapshot_thread([]() {
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::minutes(1));
+            save_snapshot("snapshot.txt");
+            std::cout << "Snapshot saved" << std::endl;
+        }
+    });
+
     while (true) {
         epoll_event events[100];
         int event_count = epoll_wait(epoll_fd, events, 100, -1);
@@ -69,6 +82,8 @@ void Runner::run_server(int argc, char* argv[]) {
             }
         }
     }
+
+    snapshot_thread.join();
 }
 
 void Runner::accept_connection(int epoll_fd, int server_fd) {
