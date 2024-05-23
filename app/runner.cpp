@@ -11,7 +11,6 @@
 
 void Runner::run_server(int argc, char* argv[]) {
     Environment::load();
-    std::cout << "Starting server on " << Environment::HOST << ":" << Environment::PORT << std::endl;
 
     load_snapshot("snapshot.txt");
     std::cout << "Snapshot loaded from snapshot.txt" << std::endl;
