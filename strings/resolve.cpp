@@ -1,7 +1,8 @@
 #include "resolve.h"
 #include <unordered_map>
-#include <fstream>
+#include <sstream>
 #include <iostream>
+#include <fstream>
 
 static std::unordered_map<std::string, std::string> key_dict;
 
@@ -10,6 +11,9 @@ std::string resolve_ping() {
 }
 
 std::string resolve_set(const std::string& data) {
+    if (data.find('*') != std::string::npos) {
+        return "ERROR: Invalid key\n";
+    }
     size_t key_start = data.find(' ') + 1;
     size_t key_end = data.find(' ', key_start);
     std::string key = data.substr(key_start, key_end - key_start);
@@ -19,6 +23,17 @@ std::string resolve_set(const std::string& data) {
 }
 
 std::string resolve_get(const std::string& data) {
+    if (data == "GET *") {
+        if (key_dict.empty()) {
+            return "empty";
+        }
+        std::ostringstream oss;
+        for (const auto& pair : key_dict) {
+            oss << pair.first << " : " << pair.second << "\n";
+        }
+        return oss.str();
+    }
+
     size_t key_start = data.find(' ') + 1;
     size_t key_end = data.find("\r\n", key_start);
     std::string key = data.substr(key_start, key_end - key_start);
