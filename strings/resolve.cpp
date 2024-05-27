@@ -3,6 +3,9 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <algorithm>
+#include <regex>
 
 static std::unordered_map<std::string, std::string> key_dict;
 
@@ -53,6 +56,42 @@ std::string resolve_delete(const std::string& data) {
     } else {
         return "NULL";
     }
+}
+
+std::string resolve_search(const std::string& data) {
+    size_t pattern_start = data.find(' ') + 1;
+    std::string pattern = data.substr(pattern_start);
+    std::string regex_pattern = "^" + std::regex_replace(pattern, std::regex("\\*"), ".*") + "$";
+    std::regex re(regex_pattern);
+
+    std::ostringstream oss;
+    for (const auto& pair : key_dict) {
+        if (std::regex_match(pair.first, re)) {
+            oss << pair.first << "\n";
+        }
+    }
+    return oss.str();
+}
+
+std::string resolve_scan(const std::string& data) {
+    size_t cursor_start = data.find(' ') + 1;
+    size_t cursor_end = data.find(' ', cursor_start);
+    std::string cursor_str = data.substr(cursor_start, cursor_end - cursor_start);
+    size_t cursor = std::stoul(cursor_str);
+    
+    size_t count_start = data.find(' ', cursor_end) + 1;
+    std::string count_str = data.substr(count_start);
+    size_t count = std::stoul(count_str);
+    
+    std::ostringstream oss;
+    auto it = key_dict.begin();
+    std::advance(it, cursor);
+
+    for (size_t i = 0; i < count && it != key_dict.end(); ++i, ++it) {
+        oss << it->first << " : " << it->second << "\n";
+    }
+
+    return oss.str();
 }
 
 

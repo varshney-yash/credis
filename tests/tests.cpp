@@ -76,16 +76,21 @@ void clear_database() {
 }
 
 void test_get_all() {
-    clear_database();  
+    clear_database(); 
+
+    std::string get_all_request = "GET *";
+    std::string actual_response = resolve_get(get_all_request);
+    std::string expected_response = "";
+
+    assert(actual_response == expected_response);
 
     std::string set_request1 = "SET key5 value5";
     std::string set_request2 = "SET key6 value6";
     resolve_set(set_request1);
     resolve_set(set_request2);
 
-    std::string get_all_request = "GET *";
-    std::string actual_response = resolve_get(get_all_request);
-    std::string expected_response = "key5 : value5\nkey6 : value6\n";
+    actual_response = resolve_get(get_all_request);
+    expected_response = "key5 : value5\nkey6 : value6\n";
 
     auto actual_lines = split_lines(actual_response);
     auto expected_lines = split_lines(expected_response);
@@ -106,6 +111,52 @@ void test_invalid_set() {
     std::cout << "test_invalid_set passed." << std::endl;
 }
 
+void test_search() {
+    clear_database(); 
+
+    std::string set_request1 = "SET key7 value7";
+    std::string set_request2 = "SET key8 value8";
+    std::string set_request3 = "SET otherkey value9";
+    resolve_set(set_request1);
+    resolve_set(set_request2);
+    resolve_set(set_request3);
+
+    std::string search_request = "SEARCH key*";
+    std::string actual_response = resolve_search(search_request);
+    std::string expected_response = "key7\nkey8\n";
+
+    auto actual_lines = split_lines(actual_response);
+    auto expected_lines = split_lines(expected_response);
+    std::sort(actual_lines.begin(), actual_lines.end());
+    std::sort(expected_lines.begin(), expected_lines.end());
+
+    assert(actual_lines == expected_lines);
+
+    std::cout << "test_search passed." << std::endl;
+}
+
+void test_scan() {
+    clear_database(); 
+
+    std::string set_request1 = "SET key9 value9";
+    std::string set_request2 = "SET key10 value10";
+    resolve_set(set_request1);
+    resolve_set(set_request2);
+
+    std::string scan_request = "SCAN 0 2";
+    std::string actual_response = resolve_scan(scan_request);
+    std::string expected_response = "key9 : value9\nkey10 : value10\n";
+
+    auto actual_lines = split_lines(actual_response);
+    auto expected_lines = split_lines(expected_response);
+    std::sort(actual_lines.begin(), actual_lines.end());
+    std::sort(expected_lines.begin(), expected_lines.end());
+
+    assert(actual_lines == expected_lines);
+
+    std::cout << "test_scan passed." << std::endl;
+}
+
 int main() {
     test_resolve_set_get();
     test_resolve_delete();
@@ -113,6 +164,8 @@ int main() {
     test_snapshot();
     test_get_all();
     test_invalid_set();
+    test_search();
+    test_scan();
     std::cout << "All tests passed." << std::endl;
     return 0;
 }

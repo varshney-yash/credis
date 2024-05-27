@@ -129,6 +129,10 @@ std::string Runner::parse_request(const std::string& request) {
 
     if (command.substr(0, 3) == "SET") {
         return resolve_set(command);
+    } else if (command.substr(0, 4) == "SCAN") {
+        return resolve_scan(command);
+    } else if (command.substr(0, 6) == "SEARCH") {
+        return resolve_search(command);
     } else if (command.substr(0, 3) == "GET") {
         return resolve_get(command);
     } else if (command.substr(0, 6) == "DELETE") {
