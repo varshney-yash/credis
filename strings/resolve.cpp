@@ -49,13 +49,28 @@ std::string resolve_get(const std::string& data) {
 
 std::string resolve_delete(const std::string& data) {
     size_t key_start = data.find(' ') + 1;
-    size_t key_end = data.find("\r\n", key_start);
-    std::string key = data.substr(key_start, key_end - key_start);
-    if (key_dict.erase(key)) {
+    std::string pattern = data.substr(key_start);
+    
+    if (pattern == "*") {
+        key_dict.clear();
         return "OK";
-    } else {
-        return "NULL";
     }
+
+    std::string regex_pattern = "^" + std::regex_replace(pattern, std::regex("\\*"), ".*") + "$";
+    std::regex re(regex_pattern);
+    std::vector<std::string> keys_to_delete;
+
+    for (const auto& pair : key_dict) {
+        if (std::regex_match(pair.first, re)) {
+            keys_to_delete.push_back(pair.first);
+        }
+    }
+
+    for (const auto& key : keys_to_delete) {
+        key_dict.erase(key);
+    }
+
+    return "OK";
 }
 
 std::string resolve_search(const std::string& data) {

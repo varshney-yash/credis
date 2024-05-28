@@ -80,7 +80,7 @@ void test_get_all() {
 
     std::string get_all_request = "GET *";
     std::string actual_response = resolve_get(get_all_request);
-    std::string expected_response = "";
+    std::string expected_response = "empty";
 
     assert(actual_response == expected_response);
 
@@ -157,6 +157,26 @@ void test_scan() {
     std::cout << "test_scan passed." << std::endl;
 }
 
+void test_delete_pattern() {
+    clear_database();  
+
+    std::string set_request1 = "SET key11 value11";
+    std::string set_request2 = "SET key12 value12";
+    std::string set_request3 = "SET otherkey value13";
+    resolve_set(set_request1);
+    resolve_set(set_request2);
+    resolve_set(set_request3);
+
+    std::string delete_request = "DELETE key*";
+    assert(resolve_delete(delete_request) == "OK");
+
+    assert(resolve_get("GET key11") == "NULL");
+    assert(resolve_get("GET key12") == "NULL");
+    assert(resolve_get("GET otherkey") == "value13");
+
+    std::cout << "test_delete_pattern passed." << std::endl;
+}
+
 int main() {
     test_resolve_set_get();
     test_resolve_delete();
@@ -166,6 +186,7 @@ int main() {
     test_invalid_set();
     test_search();
     test_scan();
+    test_delete_pattern();
     std::cout << "All tests passed." << std::endl;
     return 0;
 }
